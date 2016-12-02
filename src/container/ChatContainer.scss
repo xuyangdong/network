@@ -54,10 +54,12 @@
     display: flex;
     flex-direction: column;
     padding: 15px;
+    overflow-y: scroll;
     :local(.session){
       height:60px;
       padding:10px;
       display: flex;
+      flex-shrink: 0;
       :local(.sessionAvatar){
         height:40px;
         width:40px;
@@ -74,7 +76,7 @@
         margin-left: 5px;
         position: relative;
         border-radius: 4px;
-        line-height: 25px
+        line-height: 30px
       }
     }
   }

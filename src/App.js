@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import {ChatContainer} from './container/ChatContainer'
+// import {ChatContainer} from './container/ChatContainer'
+import ChatContainer from './container/ChatContainer'
 import styles from './App.scss'
 
 class App extends Component {

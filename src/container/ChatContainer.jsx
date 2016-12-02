@@ -1,33 +1,50 @@
 import React from 'react'
-import {Row,Col,Button} from 'antd'
+import {Row,Col} from 'antd'
 import styles from './ChatContainer.scss'
 import pic1 from '../public/50.jpeg'
 import MyEditor from './MyEditor'
+import {fromJS,toJS} from 'immutable'
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+import {sending,chooseRoom} from '../actions/chat'
+import timeago from 'timeago.js'
 export const ChatContainer = React.createClass({
 
   getDefaultProps(){
     return {
-      roomList:[
+      roomList:fromJS([
         {
           name:1,
           time:Date.now(),
           msg:[{
-            role:'A',
-            content:'哈哈哈'
+            role:'徐阳东',
+            content:'你好'
+          },{
+            role:'徐茂陈',
+            content:'你好'
+          }]
+        },{
+          name:2,
+          time:Date.now(),
+          msg:[{
+            role:'徐阳东',
+            content:'你好'
+          },{
+            role:'徐茂陈',
+            content:'你好'
           }]
         }
-      ],
-      currentRoom:{
-        sessionList:[{
-          role:'A',
-          content:'你好'
-        },{
-          role:'me',
-          content:'你好'
-        }]
-      },
-      currentMaster:'me'
+      ]),
+      currentRoom:0,
+      currentMaster:'徐阳东'
     }
+  },
+  handleSending(content){
+    const {currentRoom,currentMaster} = this.props
+    this.props.sending({role:currentMaster,content:content},currentMaster)
+  },
+  handleChooseRoom(index){
+    this.props.chooseRoom(index)
   },
   render(){
     const {roomList,currentRoom,currentMaster} = this.props
@@ -57,13 +74,13 @@ export const ChatContainer = React.createClass({
                 <div>
                   {/* 列表 */}
                   {
-                    roomList.map( (item,index) => (
-                      <div key={index} className={styles.room}>
+                    roomList.toJS().map( (item,index) => (
+                      <div key={index} className={styles.room} onClick={(e) => {this.handleChooseRoom(index)}} style={currentRoom===index?{backgroundColor:'#CCCCCC'}:{backgroundColor:'#FBFBFB'}}>
                         <div className={styles.roomAvatar}>
                           <img src={pic1} alt='Avatar'/>
                         </div>
                         <div className={styles.roomInfo}>
-                          <div><div>{item.name}</div><div>{item.time}</div></div>
+                          <div><div>{item.name}</div><div>{new timeago().format(item.time,'zh_CN')}</div></div>
                           <div>{item.msg[0].content}</div>
                         </div>
                       </div>
@@ -82,13 +99,22 @@ export const ChatContainer = React.createClass({
                 <div className={styles.chatContent}>
                   {/* 对话面板 */}
                   {
-                    currentRoom.sessionList.map( (item,index) => {
-                        return (
-                          <div key={index} className={styles.session} style={item.role==currentMaster?{alignSelf:'flex-end'}:{alignSelf:'flex-start'}}>
+                    roomList.get(currentRoom).get('msg').toJS().map( (item,index) => {
+                        return item.role==currentMaster?(
+                          <div key={index} className={styles.session} style={{alignSelf:'flex-end'}}>
+                            <div className={styles.sessionContent} style={{backgroundColor:'#A2E563'}}>
+                              {item.content}
+                            </div>
+                            <div className={styles.sessionAvatar} style={{marginLeft:'5px'}}>
+                              <img src={pic1} alt='头像'/>
+                            </div>
+                          </div>
+                        ):(
+                          <div key={index} className={styles.session} style={{alignSelf:'flex-start'}}>
                             <div className={styles.sessionAvatar}>
                               <img src={pic1} alt='头像'/>
                             </div>
-                            <div className={styles.sessionContent} style={item.role==currentMaster?{backgroundColor:'#A2E563'}:{backgroundColor:'#FFFFFF'}}>
+                            <div className={styles.sessionContent} style={{backgroundColor:'#FFFFFF'}}>
                               {item.content}
                             </div>
                           </div>
@@ -98,7 +124,7 @@ export const ChatContainer = React.createClass({
                 </div>
                 <div className={styles.chatInput}>
                   {/* 输入框 */}
-                  <MyEditor />
+                  <MyEditor dd={1} onSubmit={this.handleSending}/>
                 </div>
               </div>
             </Col>
@@ -109,3 +135,21 @@ export const ChatContainer = React.createClass({
     )
   }
 })
+
+function mapStateToProps(state) {
+	return {
+	   roomList: state.getIn(['chat','roomList']),
+     currentRoom:state.getIn(['chat','currentRoom']),
+     currentMaster:state.getIn(['chat',"currentMaster"]),
+	}
+}
+
+function mapDispatchToProps(dispatch) {
+	return {
+    sending:bindActionCreators(sending,dispatch),
+    chooseRoom:bindActionCreators(chooseRoom,dispatch)
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChatContainer)

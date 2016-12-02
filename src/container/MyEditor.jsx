@@ -1,6 +1,5 @@
 import React from 'react'
-import {Editor, EditorState,KeyBindingUtil,getDefaultKeyBinding} from 'draft-js';
-const {hasCommandModifier} = KeyBindingUtil
+import {Editor, EditorState,getDefaultKeyBinding} from 'draft-js';
 
 function myKeyBindingFn(e: SyntheticKeyboardEvent): string {
   //回车键发送
@@ -23,7 +22,10 @@ const MyEditor = React.createClass({
     if (command === 'myeditor-send') {
       // Perform a request to save your contents, set
       // a new `editorState`, etc.
-      console.log("发送消息")
+      this.props.onSubmit(this.state.editorState.getCurrentContent().getPlainText())
+      this.setState({
+        editorState:EditorState.createEmpty()
+      })
 
       return 'handled';
     }
@@ -35,7 +37,7 @@ const MyEditor = React.createClass({
         ref='myEditor'
         placeholder='开始聊天吧……'
         editorState={this.state.editorState}
-        onChange = {editorState => {this.setState({editorState})}}
+        onChange={editorState => {this.setState({editorState})}}
         keyBindingFn={myKeyBindingFn}
         handleKeyCommand={this.handleKeyCommand}
         />
