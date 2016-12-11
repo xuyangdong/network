@@ -3,11 +3,12 @@ import {Row,Col} from 'antd'
 import styles from './ChatContainer.scss'
 import pic1 from '../public/50.jpeg'
 import MyEditor from './MyEditor'
-import {fromJS,toJS} from 'immutable'
+import {fromJS} from 'immutable'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
-import {sending,chooseRoom} from '../actions/chat'
+import {sending,chooseRoom,receive} from '../actions/chat'
 import timeago from 'timeago.js'
+import {sock} from '../config'
 export const ChatContainer = React.createClass({
 
   getDefaultProps(){
@@ -39,9 +40,19 @@ export const ChatContainer = React.createClass({
       currentMaster:'徐阳东'
     }
   },
+  componentDidMount(){
+    const {currentRoom} = this.props
+    sock.onmessage = function(e){
+      console.log("收到的信息:",e.data)
+      var datas = e.data.split(' ')
+      if(datas.length === 3){
+        this.props.receive({role:datas[0],content:datas[2]},currentRoom)
+      }
+    }
+  },
   handleSending(content){
     const {currentRoom,currentMaster} = this.props
-    this.props.sending({role:currentMaster,content:content},currentMaster)
+    this.props.sending({role:currentMaster,content:content},currentRoom)
   },
   handleChooseRoom(index){
     this.props.chooseRoom(index)
@@ -100,7 +111,7 @@ export const ChatContainer = React.createClass({
                   {/* 对话面板 */}
                   {
                     roomList.get(currentRoom).get('msg').toJS().map( (item,index) => {
-                        return item.role==currentMaster?(
+                        return item.role===currentMaster?(
                           <div key={index} className={styles.session} style={{alignSelf:'flex-end'}}>
                             <div className={styles.sessionContent} style={{backgroundColor:'#A2E563'}}>
                               {item.content}
@@ -147,7 +158,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
 	return {
     sending:bindActionCreators(sending,dispatch),
-    chooseRoom:bindActionCreators(chooseRoom,dispatch)
+    chooseRoom:bindActionCreators(chooseRoom,dispatch),
+    receive:bindActionCreators(receive,dispatch)
   }
 }
 

@@ -1,5 +1,5 @@
 import {fromJS} from "immutable"
-import {SENDING,CHOOSEROOM} from '../actions/chat'
+import {SENDING,CHOOSEROOM,RECEIVE} from '../actions/chat'
 const initialState = fromJS({
   roomList:[
     {
@@ -34,6 +34,10 @@ export default (state = initialState,action) => {
       return newState2
     case CHOOSEROOM:
       return state.set('currentRoom',action.payload)
+    case RECEIVE:
+      let newState3 = state.setIn(['roomList',state.get('currentRoom'),'msg'], state.getIn(['roomList',state.get('currentRoom'),'msg']).push(action.payload) )
+      let newState4 = newState3.setIn(['roomList',state.get('currentRoom'),'time'],Date.now())
+      return newState4
     default:
       return state
 
